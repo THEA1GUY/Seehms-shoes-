@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated color tokens to match Shoe Haven brand design */
+  --background: oklch(0.98 0 0); /* Light Gray #F8F8F8 */
+  --foreground: oklch(0.18 0 0); /* Charcoal #2D2D2D */
+  --card: oklch(1 0 0); /* White #FFFFFF */
+  --card-foreground: oklch(0.18 0 0); /* Charcoal for card text */
+  --popover: oklch(0.35 0.08 285); /* Dark Purple #4B3C6E */
+  --popover-foreground: oklch(1 0 0); /* White for popover text */
+  --primary: oklch(0.35 0.08 285); /* Dark Purple #4B3C6E */
+  --primary-foreground: oklch(1 0 0); /* White for primary button text */
+  --secondary: oklch(0.68 0.15 25); /* Coral #FF6F61 */
+  --secondary-foreground: oklch(1 0 0); /* White for secondary button text */
+  --muted: oklch(0.96 0 0); /* Light muted background */
+  --muted-foreground: oklch(0.45 0 0); /* Muted text */
+  --accent: oklch(0.85 0.12 85); /* Gold #FFD700 */
+  --accent-foreground: oklch(0.35 0.08 285); /* Dark Purple for accent text */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.88 0 0); /* Light border #E0E0E0 */
+  --input: oklch(1 0 0); /* White for inputs */
+  --ring: oklch(0.85 0.12 85); /* Gold for focus rings */
+  --chart-1: oklch(0.35 0.08 285); /* Dark Purple */
+  --chart-2: oklch(0.68 0.15 25); /* Coral */
+  --chart-3: oklch(0.85 0.12 85); /* Gold */
+  --chart-4: oklch(0.18 0 0); /* Charcoal */
+  --chart-5: oklch(0.96 0 0); /* Light Gray */
+  --radius: 0.5rem;
+  --sidebar: oklch(1 0 0); /* White sidebar */
+  --sidebar-foreground: oklch(0.18 0 0); /* Charcoal sidebar text */
+  --sidebar-primary: oklch(0.35 0.08 285); /* Dark Purple */
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.68 0.15 25); /* Coral accent */
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.88 0 0);
+  --sidebar-ring: oklch(0.85 0.12 85); /* Gold */
+}
+
+.dark {
+  /* Updated dark mode tokens to maintain brand consistency */
+  --background: oklch(0.12 0 0); /* Dark background */
+  --foreground: oklch(0.98 0 0); /* Light text */
+  --card: oklch(0.15 0 0); /* Dark card */
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.45 0.08 285); /* Lighter purple for dark mode */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.78 0.15 25); /* Lighter coral for dark mode */
+  --secondary-foreground: oklch(0.12 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.85 0.12 85); /* Gold remains bright */
+  --accent-foreground: oklch(0.12 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.18 0 0);
+  --ring: oklch(0.85 0.12 85);
+  --chart-1: oklch(0.45 0.08 285);
+  --chart-2: oklch(0.78 0.15 25);
+  --chart-3: oklch(0.85 0.12 85);
+  --chart-4: oklch(0.65 0 0);
+  --chart-5: oklch(0.25 0 0);
+  --sidebar: oklch(0.15 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.45 0.08 285);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.78 0.15 25);
+  --sidebar-accent-foreground: oklch(0.12 0 0);
+  --sidebar-border: oklch(0.25 0 0);
+  --sidebar-ring: oklch(0.85 0.12 85);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  /* Added custom font variables for Work Sans and Open Sans */
+  --font-heading: "Work Sans", sans-serif;
+  --font-body: "Open Sans", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  /* Added typography classes for consistent heading and body text */
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
+}
