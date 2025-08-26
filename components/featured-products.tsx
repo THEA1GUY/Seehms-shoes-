@@ -54,11 +54,11 @@ const featuredProducts = [
 
 export function FeaturedProducts() {
   return (
-    <section className="py-16 lg:py-24 bg-muted/30">
+    <section className="py-12 md:py-16 lg:py-24 bg-muted/30">
       <div className="container mx-auto px-4">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="font-heading font-bold text-3xl lg:text-4xl">Featured Products</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+        <div className="text-center space-y-4 mb-10 md:mb-12">
+          <h2 className="font-heading font-bold text-2xl sm:text-3xl lg:text-4xl">Featured Products</h2>
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
             Discover our most popular and highly-rated footwear, loved by thousands of customers.
           </p>
         </div>
@@ -154,7 +154,7 @@ export function FeaturedProducts() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-10 md:mt-12">
           <Button
             size="lg"
             variant="outline"

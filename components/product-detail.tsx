@@ -302,7 +302,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
                 Size Guide
               </Button>
             </div>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
               {product.sizes.map((size) => (
                 <Button
                   key={size}
@@ -332,22 +332,24 @@ export function ProductDetail({ productId }: ProductDetailProps) {
 
           {/* Actions */}
           <div className="space-y-4">
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button onClick={handleAddToCart} className="flex-1" size="lg">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add to Cart
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className={isWishlisted ? "text-red-500 border-red-500" : ""}
-              >
-                <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
-              </Button>
-              <Button variant="outline" size="lg">
-                <Share2 className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`flex-1 ${isWishlisted ? "text-red-500 border-red-500" : ""}`}
+                >
+                  <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+                </Button>
+                <Button variant="outline" size="lg" className="flex-1">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <Button variant="secondary" className="w-full" size="lg">
               Buy Now
@@ -356,7 +358,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
 
           {/* Features */}
           <div className="space-y-3">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4" />
                 <span>Free shipping over $75</span>
