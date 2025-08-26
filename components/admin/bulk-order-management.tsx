@@ -215,7 +215,7 @@ export function BulkOrderManagement() {
                           </Button>
                         </>
                       )}
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => console.log(`View details for order ${order.id}`)}>
                         View Details
                       </Button>
                     </div>
@@ -246,8 +246,8 @@ export function BulkOrderManagement() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm">{quote.status === "pending" ? "Create Quote" : "View Quote"}</Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" onClick={() => console.log(`${quote.status === "pending" ? "Create Quote" : "View Quote"} for ${quote.id}`)}>{quote.status === "pending" ? "Create Quote" : "View Quote"}</Button>
+                      <Button size="sm" variant="outline" onClick={() => console.log(`Contacted ${quote.contact} for quote ${quote.id}`)}>
                         Contact
                       </Button>
                     </div>
