@@ -65,103 +65,110 @@ export function FeaturedProducts() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {featuredProducts.map((product) => (
-            <Card
-              key={product.id}
-              className="group cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-            >
-              <div className="relative">
-                <div className="aspect-square overflow-hidden rounded-t-lg">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <Badge
-                  className={`absolute top-3 left-3 ${
-                    product.badge === "Sale"
-                      ? "bg-secondary text-secondary-foreground"
-                      : product.badge === "New"
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-primary text-primary-foreground"
-                  }`}
-                >
-                  {product.badge}
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-3 right-3 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Heart className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <CardContent className="p-4 space-y-3">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{product.category}</p>
-                  <h3 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2">
-                    {product.name}
-                  </h3>
+            <Link key={product.id} href={`/product/${product.id}`}>
+              <Card
+                className="group cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="relative">
+                  <div className="aspect-square overflow-hidden rounded-t-lg">
+                    <img
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <Badge
+                    className={`absolute top-3 left-3 ${
+                      product.badge === "Sale"
+                        ? "bg-secondary text-secondary-foreground"
+                        : product.badge === "New"
+                          ? "bg-accent text-accent-foreground"
+                          : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    {product.badge}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-3 right-3 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log(`Added ${product.name} to wishlist`);
+                    }}
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
                 </div>
 
-                <div className="flex items-center space-x-1">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${
-                          i < Math.floor(product.rating) ? "text-accent fill-current" : "text-muted-foreground/30"
+                <CardContent className="p-4 space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{product.category}</p>
+                    <h3 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2">
+                      {product.name}
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center space-x-1">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-3 w-3 ${
+                            i < Math.floor(product.rating) ? "text-accent fill-current" : "text-muted-foreground/30"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold text-lg">${product.price}</span>
+                    {product.originalPrice && (
+                      <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-1">
+                    {product.colors.map((color, index) => (
+                      <div
+                        key={color}
+                        className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${
+                          color === "White"
+                            ? "bg-white border-gray-300"
+                            : color === "Black"
+                              ? "bg-black"
+                              : color === "Gray"
+                                ? "bg-gray-400"
+                                : color === "Brown"
+                                  ? "bg-amber-700"
+                                  : color === "Navy"
+                                    ? "bg-blue-900"
+                                    : color === "Olive"
+                                      ? "bg-green-700"
+                                      : "bg-gray-300"
                         }`}
+                        title={color}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-muted-foreground">({product.reviews})</span>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-lg">${product.price}</span>
-                  {product.originalPrice && (
-                    <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  {product.colors.map((color, index) => (
-                    <div
-                      key={color}
-                      className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-                        color === "White"
-                          ? "bg-white border-gray-300"
-                          : color === "Black"
-                            ? "bg-black"
-                            : color === "Gray"
-                              ? "bg-gray-400"
-                              : color === "Brown"
-                                ? "bg-amber-700"
-                                : color === "Navy"
-                                  ? "bg-blue-900"
-                                  : color === "Olive"
-                                    ? "bg-green-700"
-                                    : "bg-gray-300"
-                      }`}
-                      title={color}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 
         <div className="text-center mt-10 md:mt-12">
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
-          >
-            View All Products
-          </Button>
+          <Link href="/shop">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
+            >
+              View All Products
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

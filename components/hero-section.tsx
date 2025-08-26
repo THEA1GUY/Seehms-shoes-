@@ -25,17 +25,21 @@ export function HeroSection() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 group">
-                Shop Now
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
-              >
-                View Collection
-              </Button>
+              <Link href="/shop">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 group">
+                  Shop Now
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href="/shop">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
+                >
+                  View Collection
+                </Button>
+              </Link>
             </div>
 
             {/* Social Proof */}
