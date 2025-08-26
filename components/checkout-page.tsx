@@ -113,7 +113,7 @@ export function CheckoutPage() {
                 <CardTitle>Shipping Address</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
@@ -143,7 +143,7 @@ export function CheckoutPage() {
                     placeholder="123 Main Street"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="city">City</Label>
                     <Input
@@ -169,7 +169,7 @@ export function CheckoutPage() {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="zipCode">ZIP Code</Label>
                     <Input
@@ -262,7 +262,7 @@ export function CheckoutPage() {
                     onChange={(e) => handleInputChange("nameOnCard", e.target.value)}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="expiryDate">Expiry Date</Label>
                     <Input

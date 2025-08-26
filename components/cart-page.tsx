@@ -73,9 +73,9 @@ export function CartPage() {
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
             <Card key={`${item.id}-${item.color}-${item.size}`}>
-              <CardContent className="p-6">
-                <div className="flex gap-6">
-                  <div className="w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                  <div className="w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0 mx-auto">
                     <img
                       src={item.image || "/placeholder.svg"}
                       alt={item.name}
@@ -87,7 +87,7 @@ export function CartPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-medium text-lg">{item.name}</h3>
-                        <p className="text-muted-foreground">{item.brand}</p>
+                        <p className="text-muted-foreground text-sm">{item.brand}</p>
                         <p className="text-sm text-muted-foreground">
                           Color: {item.color} • Size: {item.size}
                         </p>
@@ -95,7 +95,7 @@ export function CartPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive flex-shrink-0"
                         onClick={() => removeItem(item.id, item.color, item.size)}
                       >
                         <X className="h-4 w-4" />
