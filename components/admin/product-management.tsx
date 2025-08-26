@@ -153,13 +153,13 @@ export function ProductManagement() {
                           </Badge>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="icon">
+                          <Button variant="outline" size="icon" onClick={() => console.log(`View product ${product.id}`)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button variant="outline" size="icon" onClick={() => console.log(`Edit product ${product.id}`)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon">
+                          <Button variant="outline" size="icon" onClick={() => console.log(`Delete product ${product.id}`)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -227,7 +227,7 @@ export function ProductManagement() {
                   <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                     <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-sm text-muted-foreground mb-2">Drag and drop images here, or click to browse</p>
-                    <Button variant="outline">Choose Files</Button>
+                    <Button variant="outline" onClick={() => console.log("Choose Files button clicked")}>Choose Files</Button>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="aspect-square bg-muted rounded-md"></div>
@@ -248,7 +248,7 @@ export function ProductManagement() {
                     <Label>Available Sizes</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {["US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12"].map((size) => (
-                        <Button key={size} variant="outline" size="sm">
+                        <Button key={size} variant="outline" size="sm" onClick={() => console.log(`Selected size: ${size}`)}>
                           {size}
                         </Button>
                       ))}
@@ -258,7 +258,7 @@ export function ProductManagement() {
                     <Label>Available Colors</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {["Black", "White", "Red", "Blue", "Green"].map((color) => (
-                        <Button key={color} variant="outline" size="sm">
+                        <Button key={color} variant="outline" size="sm" onClick={() => console.log(`Selected color: ${color}`)}>
                           {color}
                         </Button>
                       ))}
@@ -269,8 +269,8 @@ export function ProductManagement() {
             </Card>
 
             <div className="flex justify-end space-x-4">
-              <Button variant="outline">Save as Draft</Button>
-              <Button>Publish Product</Button>
+              <Button variant="outline" onClick={() => console.log("Save as Draft button clicked")}>Save as Draft</Button>
+              <Button onClick={() => console.log("Publish Product button clicked")}>Publish Product</Button>
             </div>
           </TabsContent>
         </Tabs>

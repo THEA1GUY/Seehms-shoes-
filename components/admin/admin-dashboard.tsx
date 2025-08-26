@@ -62,7 +62,7 @@ export function AdminDashboard() {
                   View Store
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={() => console.log("Settings button clicked")}>
                 <Settings className="h-5 w-5" />
               </Button>
             </div>
@@ -101,11 +101,11 @@ export function AdminDashboard() {
                       Bulk Orders
                     </Button>
                   </Link>
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => console.log("Customers button clicked")}>
                     <Users className="h-4 w-4 mr-2" />
                     Customers
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => console.log("Analytics button clicked")}>
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Analytics
                   </Button>
@@ -267,7 +267,7 @@ export function AdminDashboard() {
                         <span>Bulk Orders</span>
                       </Button>
                     </Link>
-                    <Button variant="outline" className="w-full h-20 flex flex-col space-y-2 bg-transparent">
+                    <Button variant="outline" className="w-full h-20 flex flex-col space-y-2 bg-transparent" onClick={() => console.log("View Analytics button clicked")}>
                       <TrendingUp className="h-6 w-6" />
                       <span>View Analytics</span>
                     </Button>

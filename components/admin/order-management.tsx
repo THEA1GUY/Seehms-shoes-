@@ -119,7 +119,7 @@ export function OrderManagement() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button>Update Status</Button>
+                <Button onClick={() => console.log(`Update status for order ${selectedOrder.id}`)}>Update Status</Button>
               </div>
             </div>
           </div>
@@ -301,7 +301,7 @@ export function OrderManagement() {
                           <span>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
                         </Badge>
                       </div>
-                      <Button variant="outline" size="icon">
+                      <Button variant="outline" size="icon" onClick={() => console.log(`View details for order ${order.id}`)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
