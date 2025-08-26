@@ -346,12 +346,12 @@ export function ProductDetail({ productId }: ProductDetailProps) {
                 >
                   <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
                 </Button>
-                <Button variant="outline" size="lg" className="flex-1">
+                <Button variant="outline" size="lg" className="flex-1" onClick={() => console.log("Share button clicked")}>
                   <Share2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <Button variant="secondary" className="w-full" size="lg">
+            <Button variant="secondary" className="w-full" size="lg" onClick={() => console.log("Buy Now button clicked")}>
               Buy Now
             </Button>
           </div>
@@ -430,7 +430,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-semibold text-xl">Customer Reviews</h3>
-                <Button variant="outline">Write a Review</Button>
+                <Button variant="outline" onClick={() => console.log("Write a Review button clicked")}>Write a Review</Button>
               </div>
 
               <div className="space-y-4">
@@ -503,36 +503,37 @@ export function ProductDetail({ productId }: ProductDetailProps) {
         <h2 className="font-heading font-bold text-2xl mb-8">You Might Also Like</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {relatedProducts.map((relatedProduct) => (
-            <Card
-              key={relatedProduct.id}
-              className="group cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-            >
-              <div className="aspect-square overflow-hidden rounded-t-lg">
-                <img
-                  src={relatedProduct.image || "/placeholder.svg"}
-                  alt={relatedProduct.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <CardContent className="p-4 space-y-2">
-                <h3 className="font-medium group-hover:text-primary transition-colors">{relatedProduct.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">${relatedProduct.price}</span>
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${
-                          i < Math.floor(relatedProduct.rating)
-                            ? "text-accent fill-current"
-                            : "text-muted-foreground/30"
-                        }`}
-                      />
-                    ))}
-                  </div>
+            <Link key={relatedProduct.id} href={`/product/${relatedProduct.id}`}>
+              <Card
+                className="group cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="aspect-square overflow-hidden rounded-t-lg">
+                  <img
+                    src={relatedProduct.image || "/placeholder.svg"}
+                    alt={relatedProduct.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
-              </CardContent>
-            </Card>
+                <CardContent className="p-4 space-y-2">
+                  <h3 className="font-medium group-hover:text-primary transition-colors">{relatedProduct.name}</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">${relatedProduct.price}</span>
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-3 w-3 ${
+                            i < Math.floor(relatedProduct.rating)
+                              ? "text-accent fill-current"
+                              : "text-muted-foreground/30"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
