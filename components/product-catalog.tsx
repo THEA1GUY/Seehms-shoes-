@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,130 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Heart, Star, Filter, Grid, List, Search } from "lucide-react"
 import Link from "next/link"
-
-// Mock product data - in real app this would come from API/database
-const allProducts = [
-  {
-    id: 1,
-    name: "CloudWalk Pro Sneakers",
-    category: "sneakers",
-    price: 129.99,
-    originalPrice: 159.99,
-    rating: 4.8,
-    reviews: 124,
-    image: "/premium-white-sneakers-athletic-shoes.png",
-    badge: "Best Seller",
-    colors: ["White", "Black", "Gray"],
-    sizes: [7, 8, 9, 10, 11, 12],
-    material: "Synthetic",
-    brand: "CloudWalk",
-  },
-  {
-    id: 2,
-    name: "Executive Leather Oxfords",
-    category: "corporate",
-    price: 199.99,
-    rating: 4.9,
-    reviews: 89,
-    image: "/black-leather-oxford-dress-shoes-professional.png",
-    badge: "Premium",
-    colors: ["Black", "Brown"],
-    sizes: [7, 8, 9, 10, 11, 12],
-    material: "Leather",
-    brand: "Executive",
-  },
-  {
-    id: 3,
-    name: "Comfort Plus Slides",
-    category: "slides",
-    price: 49.99,
-    rating: 4.7,
-    reviews: 203,
-    image: "/comfortable-slides-sandals-casual-footwear.png",
-    badge: "New",
-    colors: ["Black", "White", "Navy"],
-    sizes: [6, 7, 8, 9, 10, 11, 12],
-    material: "EVA Foam",
-    brand: "ComfortPlus",
-  },
-  {
-    id: 4,
-    name: "Adventure Sandals",
-    category: "sandals",
-    price: 79.99,
-    originalPrice: 99.99,
-    rating: 4.6,
-    reviews: 156,
-    image: "/outdoor-adventure-sandals-hiking-footwear.png",
-    badge: "Sale",
-    colors: ["Brown", "Black", "Olive"],
-    sizes: [7, 8, 9, 10, 11, 12],
-    material: "Nylon",
-    brand: "Adventure",
-  },
-  {
-    id: 5,
-    name: "Classic Crocs",
-    category: "crocs",
-    price: 59.99,
-    rating: 4.5,
-    reviews: 312,
-    image: "/colorful-crocs-comfortable-casual-shoes.png",
-    badge: "Popular",
-    colors: ["Blue", "Pink", "Green", "Yellow"],
-    sizes: [6, 7, 8, 9, 10, 11, 12],
-    material: "Croslite",
-    brand: "Crocs",
-  },
-  {
-    id: 6,
-    name: "Urban Runner Sneakers",
-    category: "sneakers",
-    price: 89.99,
-    rating: 4.4,
-    reviews: 98,
-    image: "/modern-athletic-sneakers-running-shoes.png",
-    colors: ["Red", "Blue", "Black"],
-    sizes: [7, 8, 9, 10, 11, 12],
-    material: "Mesh",
-    brand: "Urban",
-  },
-  {
-    id: 7,
-    name: "Pool Slides",
-    category: "slides",
-    price: 29.99,
-    rating: 4.3,
-    reviews: 167,
-    image: "/comfortable-slides-sandals-pool-shoes.png",
-    colors: ["Black", "White", "Blue"],
-    sizes: [6, 7, 8, 9, 10, 11, 12],
-    material: "Rubber",
-    brand: "AquaSlide",
-  },
-  {
-    id: 8,
-    name: "Business Loafers",
-    category: "corporate",
-    price: 149.99,
-    rating: 4.7,
-    reviews: 76,
-    image: "/professional-business-dress-shoes-leather.png",
-    colors: ["Black", "Brown"],
-    sizes: [7, 8, 9, 10, 11, 12],
-    material: "Leather",
-    brand: "Business",
-  },
-]
-
-const categories = [
-  { value: "all", label: "All Categories" },
-  { value: "sneakers", label: "Sneakers" },
-  { value: "corporate", label: "Corporate" },
-  { value: "slides", label: "Slides" },
-  { value: "sandals", label: "Sandals" },
-  { value: "crocs", label: "Crocs" },
-]
+import { supabase } from "@/lib/supabaseClient"
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -149,40 +26,84 @@ interface ProductCatalogProps {
 }
 
 export function ProductCatalog({ category }: ProductCatalogProps) {
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState(category || "all")
   const [sortBy, setSortBy] = useState("featured")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [priceRange, setPriceRange] = useState([0, 300])
+  const [priceRange, setPriceRange] = useState([0, 20000]) // Adjusted default price range
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<number[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
 
-  // Get unique filter options
-  const uniqueColors = Array.from(new Set(allProducts.flatMap((p) => p.colors)))
-  const uniqueSizes = Array.from(new Set(allProducts.flatMap((p) => p.sizes))).sort((a, b) => a - b)
-  const uniqueBrands = Array.from(new Set(allProducts.map((p) => p.brand)))
+  async function fetchProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (name)
+      `);
+    if (error) {
+      console.error('Error fetching products for catalog:', error);
+    } else if (data) {
+      setProducts(data);
+    }
+  }
+
+  async function fetchCategories() {
+    const { data, error } = await supabase.from('categories').select('id, name');
+    if (error) {
+      console.error('Error fetching categories:', error);
+    } else if (data) {
+      setCategories(data);
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  // Get unique filter options from fetched products
+  const uniqueColors = useMemo(() => Array.from(new Set(products.flatMap((p) => p.colors || []))), [products])
+  const uniqueSizes = useMemo(() => Array.from(new Set(products.flatMap((p) => p.sizes || []))).sort((a: any, b: any) => a - b), [products])
+  const uniqueBrands = useMemo(() => Array.from(new Set(products.map((p) => p.brand || ''))), [products])
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    const filtered = allProducts.filter((product) => {
+    const filtered = products.filter((product) => {
       // Category filter
-      if (selectedCategory !== "all" && product.category !== selectedCategory) return false
+      if (selectedCategory !== "all") {
+        if (product.categories && product.categories.name.toLowerCase() !== selectedCategory) {
+          return false;
+        }
+      }
 
       // Search filter
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
 
       // Price filter
-      if (product.price < priceRange[0] || product.price > priceRange[1]) return false
+      if (product.price < priceRange[0] || product.price > priceRange[1]) {
+        return false;
+      }
 
       // Color filter
-      if (selectedColors.length > 0 && !product.colors.some((color) => selectedColors.includes(color))) return false
+      if (selectedColors.length > 0 && !(product.colors || []).some((color: string) => selectedColors.includes(color))) {
+        return false;
+      }
 
       // Size filter
-      if (selectedSizes.length > 0 && !product.sizes.some((size) => selectedSizes.includes(size))) return false
+      if (selectedSizes.length > 0 && !(product.sizes || []).some((size: number) => selectedSizes.includes(size))) {
+        return false;
+      }
 
       // Brand filter
-      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) return false
+      if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) {
+        return false;
+      }
 
       return true
     })
@@ -207,7 +128,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
     }
 
     return filtered
-  }, [searchQuery, selectedCategory, sortBy, priceRange, selectedColors, selectedSizes, selectedBrands])
+  }, [searchQuery, selectedCategory, sortBy, priceRange, selectedColors, selectedSizes, selectedBrands, products])
 
   const handleColorToggle = (color: string) => {
     setSelectedColors((prev) => (prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]))
@@ -255,8 +176,8 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
           </SelectTrigger>
           <SelectContent>
             {categories.map((cat) => (
-              <SelectItem key={cat.value} value={cat.value}>
-                {cat.label}
+              <SelectItem key={cat.id} value={cat.name.toLowerCase()}>
+                {cat.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -269,8 +190,8 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
         <div className="px-2">
           <Slider value={priceRange} onValueChange={setPriceRange} max={300} min={0} step={10} className="w-full" />
           <div className="flex justify-between text-sm text-muted-foreground mt-1">
-            <span>${priceRange[0]}</span>
-            <span>${priceRange[1]}</span>
+            <span>₦{priceRange[0]}</span>
+            <span>₦{priceRange[1]}</span>
           </div>
         </div>
       </div>
@@ -342,7 +263,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-heading font-bold text-3xl mb-2">
-          {selectedCategory === "all" ? "All Products" : categories.find((c) => c.value === selectedCategory)?.label}
+          {selectedCategory === "all" ? "All Products" : categories.find((c) => c.name.toLowerCase() === selectedCategory)?.name}
         </h1>
         <p className="text-muted-foreground">Showing {filteredProducts.length} products</p>
       </div>
@@ -440,7 +361,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                         className={`overflow-hidden ${viewMode === "list" ? "aspect-square rounded-l-lg" : "aspect-square rounded-t-lg"}`}
                       >
                         <img
-                          src={product.image || "/placeholder.svg"}
+                          src={product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -470,7 +391,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                     <CardContent className={`space-y-3 ${viewMode === "list" ? "flex-1 p-6" : "p-4"}`}>
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          {categories.find((c) => c.value === product.category)?.label}
+                          {product.categories ? product.categories.name : 'Uncategorized'}
                         </p>
                         <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
                           {product.name}
@@ -488,18 +409,18 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                        <span className="text-xs text-muted-foreground">({product.reviews || 0})</span>
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-lg">${product.price}</span>
+                        <span className="font-semibold text-lg">₦{product.price}</span>
                         {product.originalPrice && (
-                          <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
+                          <span className="text-sm text-muted-foreground line-through">₦{product.originalPrice}</span>
                         )}
                       </div>
 
                       <div className="flex items-center space-x-1">
-                        {product.colors.slice(0, 4).map((color, index) => (
+                        {(product.colors || []).slice(0, 4).map((color: string, index: number) => (
                           <div
                             key={color}
                             className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${
@@ -530,8 +451,8 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                             title={color}
                           />
                         ))}
-                        {product.colors.length > 4 && (
-                          <span className="text-xs text-muted-foreground">+{product.colors.length - 4}</span>
+                        {(product.colors || []).length > 4 && (
+                          <span className="text-xs text-muted-foreground">+{(product.colors || []).length - 4}</span>
                         )}
                       </div>
 

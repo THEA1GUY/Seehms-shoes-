@@ -1,5 +1,6 @@
+
 "use client"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,57 +10,162 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Search, Edit, Trash2, Eye, ArrowLeft, Upload } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox" // <--- Add this line
+import { Plus, Search, Edit, Trash2, Eye, ArrowLeft, Upload, X } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
 
-const mockProducts = [
-  {
-    id: 1,
-    name: "Nike Air Max 270",
-    category: "Sneakers",
-    price: 89.99,
-    stock: 45,
-    status: "active",
-    image: "/nike-air-max-sneakers.png",
-  },
-  {
-    id: 2,
-    name: "Adidas Ultraboost 22",
-    category: "Sneakers",
-    price: 129.99,
-    stock: 23,
-    status: "active",
-    image: "/adidas-ultraboost-sneakers.png",
-  },
-  {
-    id: 3,
-    name: "Classic Crocs",
-    category: "Crocs",
-    price: 49.99,
-    stock: 67,
-    status: "active",
-    image: "/crocs-classic-clogs.png",
-  },
-  {
-    id: 4,
-    name: "Comfort Slides",
-    category: "Slides",
-    price: 29.99,
-    stock: 0,
-    status: "out_of_stock",
-    image: "/comfortable-slides-sandals-pool-shoes.png",
-  },
-]
+const predefinedColors = [
+  "Black", "White", "Gray", "Brown", "Navy", "Blue", "Red", "Green", "Yellow", "Pink", "Olive"
+];
 
 export function ProductManagement() {
-  const [activeTab, setActiveTab] = useState("list")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [products, setProducts] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("list");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [productName, setProductName] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [selectedSizes, setSelectedSizes] = useState<number[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]); // New state // New state
 
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category.toLowerCase() === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  async function fetchProducts() {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories (name)
+      `);
+    if (error) {
+      console.error('Error fetching products:', error);
+    } else if (data) {
+      setProducts(data);
+    }
+  }
+
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data, error } = await supabase.from('categories').select('id, name');
+      if (error) {
+        console.error('Error fetching categories:', error);
+      } else if (data) {
+        setCategories(data);
+      }
+    }
+    fetchCategories();
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || (product.categories && product.categories.name.toLowerCase() === selectedCategory);
+    return matchesSearch && matchesCategory;
+  });
+
+  function resetForm() {
+    setProductName("");
+    setCategory("");
+    setPrice("");
+    setStock("");
+    setDescription("");
+    setSelectedFiles([]);
+    setImageUrl(""); // New reset
+    setEditingProduct(null);
+    setSelectedSizes([]);
+    setSelectedColors([]); // New reset // New reset
+  }
+
+  async function handleSaveProduct() {
+    let imageUrls = [];
+    if (imageUrl) { // Use the new imageUrl state
+        imageUrls = [imageUrl];
+    } else if (editingProduct && editingProduct.images) {
+        imageUrls = editingProduct.images; // Keep existing images if no new URL is provided
+    }
+
+    const productData = {
+        name: productName,
+        category_id: parseInt(category),
+        price: parseFloat(price),
+        description: description,
+        images: imageUrls,
+        stock: parseInt(stock),
+        sizes: selectedSizes, // Include selectedSizes
+        colors: selectedColors, // Include selectedColors
+    };
+
+    let error;
+    if (editingProduct) {
+        const { error: updateError } = await supabase.from("products").update(productData).match({ id: editingProduct.id });
+        error = updateError;
+    } else {
+        const { error: insertError } = await supabase.from("products").insert([productData]);
+        error = insertError;
+    }
+
+    if (error) {
+        console.error("Error saving product:", error);
+        alert("Error saving product.");
+    } else {
+        alert(`Product ${editingProduct ? 'updated' : 'created'} successfully!`);
+        fetchProducts();
+        resetForm();
+        setActiveTab("list");
+    }
+  }
+
+  async function handleDeleteProduct(productId: number) {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      const { error } = await supabase.from('products').delete().match({ id: productId });
+      if (error) {
+        console.error('Error deleting product:', error);
+        alert('Error deleting product.');
+      } else {
+        alert('Product deleted successfully!');
+        fetchProducts();
+      }
+    }
+  }
+
+  function handleSizeToggle(size: number) {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+  }
+
+  function handleColorToggle(color: string) {
+    setSelectedColors((prev) =>
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+    );
+  }
+
+  function handleEditClick(product: any) {
+    setEditingProduct(product);
+    setProductName(product.name);
+    setCategory(String(product.category_id));
+    setPrice(String(product.price));
+    setStock(String(product.stock));
+    setDescription(product.description);
+    setImageUrl(product.images?.[0] || ""); // Assuming product.images is an array of URLs, take the first one
+    setSelectedFiles([]);
+    setSelectedSizes(product.sizes || []); // Populate selectedSizes
+    setSelectedColors(product.colors || []); // Populate selectedColors
+    setActiveTab('add');
+  }
+
+  function handleCancelEdit() {
+    resetForm();
+    setActiveTab('list');
+  }
+
+  
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -74,7 +180,7 @@ export function ProductManagement() {
               </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Button onClick={() => setActiveTab("add")}>
+              <Button onClick={() => { resetForm(); setActiveTab("add"); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
@@ -87,7 +193,7 @@ export function ProductManagement() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="list">Product List</TabsTrigger>
-            <TabsTrigger value="add">Add Product</TabsTrigger>
+            <TabsTrigger value="add">{editingProduct ? 'Edit Product' : 'Add Product'}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="space-y-6">
@@ -117,11 +223,11 @@ export function ProductManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="sneakers">Sneakers</SelectItem>
-                      <SelectItem value="crocs">Crocs</SelectItem>
-                      <SelectItem value="slides">Slides</SelectItem>
-                      <SelectItem value="sandals">Sandals</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name.toLowerCase()}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -138,28 +244,28 @@ export function ProductManagement() {
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <div className="h-16 w-16 bg-muted rounded-md"></div>
+                        <img src={product.images[0]} alt={product.name} className="h-16 w-16 bg-muted rounded-md object-cover"/>
                         <div>
                           <h3 className="font-medium">{product.name}</h3>
-                          <p className="text-sm text-muted-foreground">{product.category}</p>
+                          <p className="text-sm text-muted-foreground">{product.categories ? product.categories.name : 'Uncategorized'}</p>
                           <p className="text-sm font-medium">${product.price}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
                           <p className="text-sm font-medium">Stock: {product.stock}</p>
-                          <Badge variant={product.status === "active" ? "default" : "destructive"}>
-                            {product.status === "active" ? "Active" : "Out of Stock"}
+                          <Badge variant={product.stock > 0 ? "default" : "destructive"}>
+                            {product.stock > 0 ? "Active" : "Out of Stock"}
                           </Badge>
                         </div>
                         <div className="flex space-x-2">
                           <Button variant="outline" size="icon" onClick={() => console.log(`View product ${product.id}`)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => console.log(`Edit product ${product.id}`)}>
+                          <Button variant="outline" size="icon" onClick={() => handleEditClick(product)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="icon" onClick={() => console.log(`Delete product ${product.id}`)}>
+                          <Button variant="outline" size="icon" onClick={() => handleDeleteProduct(product.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -173,8 +279,8 @@ export function ProductManagement() {
 
           <TabsContent value="add" className="space-y-6">
             <div>
-              <h1 className="text-3xl font-heading font-bold">Add New Product</h1>
-              <p className="text-muted-foreground">Create a new product listing</p>
+              <h1 className="text-3xl font-heading font-bold">{editingProduct ? 'Edit Product' : 'Add New Product'}</h1>
+              <p className="text-muted-foreground">{editingProduct ? 'Update the product details.' : 'Create a new product listing.'}</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -185,36 +291,59 @@ export function ProductManagement() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="productName">Product Name</Label>
-                    <Input id="productName" placeholder="Enter product name" />
+                    <Input
+                      id="productName"
+                      placeholder="Enter product name"
+                      value={productName}
+                      onChange={(e) => setProductName(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="category">Category</Label>
-                    <Select>
+                    <Select value={category} onValueChange={setCategory}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sneakers">Sneakers</SelectItem>
-                        <SelectItem value="crocs">Crocs</SelectItem>
-                        <SelectItem value="slides">Slides</SelectItem>
-                        <SelectItem value="sandals">Sandals</SelectItem>
-                        <SelectItem value="corporate">Corporate</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={String(cat.id)}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="price">Price ($)</Label>
-                      <Input id="price" type="number" placeholder="0.00" />
+                      <Input
+                        id="price"
+                        type="number"
+                        placeholder="0.00"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                      />
                     </div>
                     <div>
-                      <Label htmlFor="stock">Stock Quantity</Label>
-                      <Input id="stock" type="number" placeholder="0" />
+                      <Label htmlFor="stock">Total Stock</Label>
+                      <Input
+                        id="stock"
+                        type="number"
+                        placeholder="0"
+                        value={stock}
+                        onChange={(e) => setStock(e.target.value)}
+                      />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="Product description..." rows={4} />
+                    <Textarea
+                      id="description"
+                      placeholder="Product description..."
+                      rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -224,53 +353,96 @@ export function ProductManagement() {
                   <CardTitle>Product Images</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-sm text-muted-foreground mb-2">Drag and drop images here, or click to browse</p>
-                    <Button variant="outline" onClick={() => console.log("Choose Files button clicked")}>Choose Files</Button>
+                  <div>
+                    <Label htmlFor="imageUrl">Image URL</Label>
+                    <Input
+                      id="imageUrl"
+                      placeholder="Enter image URL (e.g., https://example.com/shoe.jpg)"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="aspect-square bg-muted rounded-md"></div>
-                    <div className="aspect-square bg-muted rounded-md"></div>
-                    <div className="aspect-square bg-muted rounded-md"></div>
+                  {imageUrl && (
+                    <div className="aspect-square bg-muted rounded-md overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt="Image preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Available Sizes Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Sizes</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-4 gap-2">
+                    {Array.from({ length: 26 }, (_, i) => 25 + i).map((size) => ( // Sizes from 25 to 50
+                      <div key={size} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`size-${size}`}
+                          checked={selectedSizes.includes(size)}
+                          onCheckedChange={() => handleSizeToggle(size)}
+                        />
+                        <Label htmlFor={`size-${size}`}>{size}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Available Colors Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Colors</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    {predefinedColors.map((color) => (
+                      <div key={color} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`color-${color}`}
+                          checked={selectedColors.includes(color)}
+                          onCheckedChange={() => handleColorToggle(color)}
+                        />
+                        <Label htmlFor={`color-${color}`}>{color}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Available Colors Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Colors</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    {predefinedColors.map((color) => (
+                      <div key={color} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`color-${color}`}
+                          checked={selectedColors.includes(color)}
+                          onCheckedChange={() => handleColorToggle(color)}
+                        />
+                        <Label htmlFor={`color-${color}`}>{color}</Label>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Variants</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Available Sizes</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {["US 6", "US 7", "US 8", "US 9", "US 10", "US 11", "US 12"].map((size) => (
-                        <Button key={size} variant="outline" size="sm" onClick={() => console.log(`Selected size: ${size}`)}>
-                          {size}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Available Colors</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {["Black", "White", "Red", "Blue", "Green"].map((color) => (
-                        <Button key={color} variant="outline" size="sm" onClick={() => console.log(`Selected color: ${color}`)}>
-                          {color}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            
 
             <div className="flex justify-end space-x-4">
-              <Button variant="outline" onClick={() => console.log("Save as Draft button clicked")}>Save as Draft</Button>
-              <Button onClick={() => console.log("Publish Product button clicked")}>Publish Product</Button>
+              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+              <Button onClick={handleSaveProduct}>{editingProduct ? 'Update Product' : 'Publish Product'}</Button>
             </div>
           </TabsContent>
         </Tabs>
