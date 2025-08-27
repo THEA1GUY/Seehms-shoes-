@@ -9,12 +9,13 @@ interface CategoryPageProps {
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
+  const { category } = params;
   return (
     <div className="min-h-screen">
       <Navigation />
       <main>
         <Suspense fallback={<div>Loading...</div>}>
-          <ProductCatalog category={params.category} />
+          <ProductCatalog category={category} />
         </Suspense>
       </main>
     </div>

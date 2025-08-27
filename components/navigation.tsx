@@ -30,20 +30,11 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {categories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))}
             <Link
-              href="/corporate"
+              href="/shop"
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
-              Corporate
+              Shop
             </Link>
           </nav>
 
@@ -82,20 +73,11 @@ export function Navigation() {
                     <Input placeholder="Search shoes..." className="pl-10" />
                   </div>
                   <nav className="flex flex-col space-y-2">
-                    {categories.map((category) => (
-                      <Link
-                        key={category.name}
-                        href={category.href}
-                        className="text-sm font-medium py-2 px-3 rounded-md hover:bg-muted transition-colors"
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
                     <Link
-                      href="/corporate"
+                      href="/shop"
                       className="text-sm font-medium py-2 px-3 rounded-md hover:bg-muted transition-colors"
                     >
-                      Corporate Orders
+                      Shop
                     </Link>
                   </nav>
                   <div className="flex flex-col space-y-2 pt-4 border-t">
