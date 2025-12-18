@@ -3,13 +3,13 @@ import { ProductCatalog } from "@/components/product-catalog"
 import { Suspense } from "react"
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string
-  }
+  }>
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  const { category } = params;
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { category } = await params;
   return (
     <div className="min-h-screen">
       <Navigation />
