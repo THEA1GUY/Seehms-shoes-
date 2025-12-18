@@ -331,7 +331,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
             <div
               className={
                 viewMode === "grid"
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  ? "grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-6"
                   : "space-y-4"
               }
             >
@@ -376,13 +376,13 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                       </Button>
                     </div>
 
-                    <CardContent className={`space-y-3 ${viewMode === "list" ? "flex-1 p-6" : "p-4"}`}>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <CardContent className={`space-y-1.5 sm:space-y-3 ${viewMode === "list" ? "flex-1 p-6" : "p-1.5 sm:p-4"}`}>
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
                           {product.categories ? product.categories.name : 'Uncategorized'}
                         </p>
                         <Link href={`/product/${product.id}`}>
-                          <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="text-xs sm:text-base font-medium group-hover:text-primary transition-colors line-clamp-1 sm:line-clamp-2 leading-tight">
                             {product.name}
                           </h3>
                         </Link>
@@ -401,10 +401,10 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                         <span className="text-xs text-muted-foreground">({product.reviews || 0})</span>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-lg">₦{product.price.toLocaleString()}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                        <span className="font-bold text-sm sm:text-lg">₦{product.price.toLocaleString()}</span>
                         {product.originalPrice && (
-                          <span className="text-sm text-muted-foreground line-through">₦{product.originalPrice.toLocaleString()}</span>
+                          <span className="text-[10px] sm:text-sm text-muted-foreground line-through">₦{product.originalPrice.toLocaleString()}</span>
                         )}
                       </div>
 

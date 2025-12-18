@@ -31,9 +31,9 @@ export function RecommendedProducts({ productId, limit = 4 }: RecommendedProduct
         return (
             <div className="space-y-4">
                 <h2 className="text-2xl font-heading font-bold">You May Also Like</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5 md:gap-4">
                     {Array.from({ length: limit }).map((_, i) => (
-                        <div key={i} className="glass-card h-64 animate-pulse" />
+                        <div key={i} className="glass-card h-40 sm:h-64 animate-pulse rounded-lg" />
                     ))}
                 </div>
             </div>
@@ -47,7 +47,7 @@ export function RecommendedProducts({ productId, limit = 4 }: RecommendedProduct
     return (
         <div className="space-y-4">
             <h2 className="text-2xl font-heading font-bold">You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5 md:gap-4">
                 {products.map((product) => (
                     <Link key={product.id} href={`/product/${product.id}`}>
                         <Card className="glass-card overflow-hidden hover:shadow-xl transition-all group">
@@ -65,26 +65,26 @@ export function RecommendedProducts({ productId, limit = 4 }: RecommendedProduct
                                     </Badge>
                                 )}
                             </div>
-                            <CardContent className="p-4">
-                                <h3 className="font-semibold text-sm line-clamp-2 mb-2">
+                            <CardContent className="p-1.5 sm:p-4">
+                                <h3 className="font-semibold text-[10px] sm:text-sm line-clamp-1 sm:line-clamp-2 mb-1 sm:mb-2 leading-tight">
                                     {product.name}
                                 </h3>
-                                <div className="flex items-center gap-1 mb-2">
+                                <div className="flex items-center gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                                     {product.rating && (
                                         <>
-                                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                            <span className="text-xs text-muted-foreground">
+                                            <Star className="h-2 w-2 sm:h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                            <span className="text-[10px] sm:text-xs text-muted-foreground">
                                                 {product.rating}
                                             </span>
                                         </>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-primary">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                    <span className="font-bold text-xs sm:text-base text-primary">
                                         ₦{product.price.toLocaleString()}
                                     </span>
                                     {product.originalPrice && (
-                                        <span className="text-xs text-muted-foreground line-through">
+                                        <span className="text-[9px] sm:text-xs text-muted-foreground line-through">
                                             ₦{product.originalPrice.toLocaleString()}
                                         </span>
                                     )}

@@ -190,7 +190,7 @@ export async function createOrder(data: {
             console.error("Failed to send order email, but order created:", emailErr)
         }
 
-        return { success: true, orderId, orderNumber }
+        return { success: true, orderId: Number(orderId), orderNumber }
     } catch (error) {
         console.error("Create order error:", error)
         return { success: false, error: "Failed to create order" }
