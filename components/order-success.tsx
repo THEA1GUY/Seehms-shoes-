@@ -11,7 +11,7 @@ export function OrderSuccess() {
   const orderNumber = "SH" + Math.random().toString(36).substr(2, 9).toUpperCase()
   // In a real app, pass actual order details via props or context.
   // For now, mocking "Last Order" data for WhatsApp message
-  const whatsappNumber = "2348187908798" // Replace with Admin Number
+  const whatsappNumber = "2349047961388" // Replace with Admin Number
   const message = `Hello! I just placed order ${orderNumber}. Please verify my payment.`
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`
 
