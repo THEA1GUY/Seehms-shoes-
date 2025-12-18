@@ -9,14 +9,14 @@ import { ShoppingCart, Plus, Minus, X, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
 export function CartDrawer() {
-  const { items, total, itemCount, updateQuantity, removeItem } = useCart()
+  const { items, cartTotal: total, cartCount: itemCount, updateQuantity, removeItem, isOpen, setIsOpen } = useCart()
 
   const shippingThreshold = 75
   const shippingCost = total >= shippingThreshold ? 0 : 9.99
   const finalTotal = total + shippingCost
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />

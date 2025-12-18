@@ -15,7 +15,7 @@ import { CreditCard, Lock, Truck, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function CheckoutPage() {
-  const { items, total, itemCount, clearCart } = useCart()
+  const { items, cartTotal: total, cartCount: itemCount, clearCart } = useCart()
   const router = useRouter()
   const [isProcessing, setIsProcessing] = useState(false)
   const [formData, setFormData] = useState({

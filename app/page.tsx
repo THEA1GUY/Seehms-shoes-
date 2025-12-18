@@ -3,6 +3,8 @@ import { HeroSection } from "@/components/hero-section"
 import { CategoryTiles } from "@/components/category-tiles"
 import { FeaturedProducts } from "@/components/featured-products"
 
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">

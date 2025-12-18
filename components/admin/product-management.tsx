@@ -1,6 +1,8 @@
 
+
 "use client"
-import { useState, useRef, useEffect } from "react"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,9 +12,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox" // <--- Add this line
-import { Plus, Search, Edit, Trash2, Eye, ArrowLeft, Upload, X } from "lucide-react"
-import { supabase } from "@/lib/supabaseClient"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Plus, Search, Edit, Trash2, Eye, ArrowLeft, Loader2 } from "lucide-react"
+
+import { ImageUpload } from "@/app/admin/products/image-upload" // New Import
+import { getProducts, upsertProduct, removeProduct, getCategories, type ColorVariant } from "@/app/actions" // New Imports
 
 const predefinedColors = [
   "Black", "White", "Gray", "Brown", "Navy", "Blue", "Red", "Green", "Yellow", "Pink", "Olive"
@@ -23,9 +27,9 @@ export function ProductManagement() {
   const [activeTab, setActiveTab] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageUrl, setImageUrl] = useState("");
+
+  // Form State
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
@@ -34,33 +38,30 @@ export function ProductManagement() {
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<number[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]); // New state // New state
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [colorVariants, setColorVariants] = useState<ColorVariant[]>([]);
 
-  async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        categories (name)
-      `);
-    if (error) {
-      console.error('Error fetching products:', error);
-    } else if (data) {
-      setProducts(data);
+  // Loading State
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function fetchData() {
+    setIsLoading(true);
+    try {
+      const [fetchedProducts, fetchedCategories] = await Promise.all([
+        getProducts(),
+        getCategories()
+      ]);
+      setProducts(fetchedProducts);
+      setCategories(fetchedCategories as any);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    async function fetchCategories() {
-      const { data, error } = await supabase.from('categories').select('id, name');
-      if (error) {
-        console.error('Error fetching categories:', error);
-      } else if (data) {
-        setCategories(data);
-      }
-    }
-    fetchCategories();
-    fetchProducts();
+    fetchData();
   }, []);
 
   const filteredProducts = products.filter((product) => {
@@ -75,61 +76,62 @@ export function ProductManagement() {
     setPrice("");
     setStock("");
     setDescription("");
-    setSelectedFiles([]);
-    setImageUrl(""); // New reset
+    setImageUrls([]);
     setEditingProduct(null);
     setSelectedSizes([]);
-    setSelectedColors([]); // New reset // New reset
+    setSelectedColors([]);
+    setColorVariants([]);
   }
 
   async function handleSaveProduct() {
-    let imageUrls = [];
-    if (imageUrl) { // Use the new imageUrl state
-        imageUrls = [imageUrl];
-    } else if (editingProduct && editingProduct.images) {
-        imageUrls = editingProduct.images; // Keep existing images if no new URL is provided
+    if (!productName || !price || !category) {
+      alert("Please fill in required fields (Name, Price, Category)")
+      return
     }
+
+    setIsLoading(true)
 
     const productData = {
-        name: productName,
-        category_id: parseInt(category),
-        price: parseFloat(price),
-        description: description,
-        images: imageUrls,
-        stock: parseInt(stock),
-        sizes: selectedSizes, // Include selectedSizes
-        colors: selectedColors, // Include selectedColors
+      id: editingProduct?.id,
+      name: productName,
+      category_id: parseInt(category),
+      price: parseFloat(price),
+      description: description,
+      images: colorVariants.length > 0 ? colorVariants.map(v => v.image).filter(i => i) : imageUrls,
+      stock: parseInt(stock) || 0,
+      sizes: selectedSizes,
+      colors: colorVariants.length > 0 ? colorVariants.map(v => v.color) : selectedColors,
+      colorVariants: colorVariants,
+      brand: "Generic", // Default for now
+      badge: stock === "0" ? "Sold Out" : "New"
     };
 
-    let error;
-    if (editingProduct) {
-        const { error: updateError } = await supabase.from("products").update(productData).match({ id: editingProduct.id });
-        error = updateError;
-    } else {
-        const { error: insertError } = await supabase.from("products").insert([productData]);
-        error = insertError;
-    }
-
-    if (error) {
-        console.error("Error saving product:", error);
-        alert("Error saving product.");
-    } else {
-        alert(`Product ${editingProduct ? 'updated' : 'created'} successfully!`);
-        fetchProducts();
-        resetForm();
-        setActiveTab("list");
+    try {
+      await upsertProduct(productData);
+      alert(`Product ${editingProduct ? 'updated' : 'created'} successfully!`);
+      await fetchData();
+      resetForm();
+      setActiveTab("list");
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Error saving product.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleDeleteProduct(productId: number) {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      const { error } = await supabase.from('products').delete().match({ id: productId });
-      if (error) {
-        console.error('Error deleting product:', error);
-        alert('Error deleting product.');
-      } else {
+      setIsLoading(true);
+      try {
+        await removeProduct(productId);
         alert('Product deleted successfully!');
-        fetchProducts();
+        await fetchData();
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        alert('Error deleting product.');
+      } finally {
+        setIsLoading(false);
       }
     }
   }
@@ -151,12 +153,12 @@ export function ProductManagement() {
     setProductName(product.name);
     setCategory(String(product.category_id));
     setPrice(String(product.price));
-    setStock(String(product.stock));
-    setDescription(product.description);
-    setImageUrl(product.images?.[0] || ""); // Assuming product.images is an array of URLs, take the first one
-    setSelectedFiles([]);
-    setSelectedSizes(product.sizes || []); // Populate selectedSizes
-    setSelectedColors(product.colors || []); // Populate selectedColors
+    setStock(String(product.stock || 0));
+    setDescription(product.description || "");
+    setImageUrls(product.images || []);
+    setSelectedSizes(product.sizes || []);
+    setSelectedColors(product.colors || []);
+    setColorVariants(product.colorVariants || []);
     setActiveTab('add');
   }
 
@@ -164,8 +166,6 @@ export function ProductManagement() {
     resetForm();
     setActiveTab('list');
   }
-
-  
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -237,18 +237,27 @@ export function ProductManagement() {
             {/* Products Table */}
             <Card>
               <CardHeader>
-                <CardTitle>Products ({filteredProducts.length})</CardTitle>
+                <CardTitle className="flex justify-between items-center">
+                  <span>Products ({filteredProducts.length})</span>
+                  {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <img src={product.images[0]} alt={product.name} className="h-16 w-16 bg-muted rounded-md object-cover"/>
+                        <div className="h-16 w-16 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                          {product.images && product.images[0] ? (
+                            <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No Img</span>
+                          )}
+                        </div>
                         <div>
                           <h3 className="font-medium">{product.name}</h3>
                           <p className="text-sm text-muted-foreground">{product.categories ? product.categories.name : 'Uncategorized'}</p>
-                          <p className="text-sm font-medium">${product.price}</p>
+                          <p className="text-sm font-medium">₦{product.price}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
@@ -259,9 +268,6 @@ export function ProductManagement() {
                           </Badge>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="icon" onClick={() => console.log(`View product ${product.id}`)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
                           <Button variant="outline" size="icon" onClick={() => handleEditClick(product)}>
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -272,6 +278,11 @@ export function ProductManagement() {
                       </div>
                     </div>
                   ))}
+                  {filteredProducts.length === 0 && !isLoading && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No products found.
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -315,7 +326,7 @@ export function ProductManagement() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="price">Price ($)</Label>
+                      <Label htmlFor="price">Price (₦)</Label>
                       <Input
                         id="price"
                         type="number"
@@ -350,26 +361,101 @@ export function ProductManagement() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Product Images</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Color Variants</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setColorVariants([...colorVariants, { color: "", image: "" }])}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add Color
+                    </Button>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">Add colors with their corresponding product images</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="imageUrl">Image URL</Label>
-                    <Input
-                      id="imageUrl"
-                      placeholder="Enter image URL (e.g., https://example.com/shoe.jpg)"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                    />
-                  </div>
-                  {imageUrl && (
-                    <div className="aspect-square bg-muted rounded-md overflow-hidden">
-                      <img
-                        src={imageUrl}
-                        alt="Image preview"
-                        className="w-full h-full object-cover"
-                      />
+                  {colorVariants.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-lg">
+                      <p>No color variants added yet.</p>
+                      <p className="text-sm">Click "Add Color" to add a color with its image.</p>
                     </div>
+                  ) : (
+                    colorVariants.map((variant, index) => (
+                      <div key={index} className="p-4 border rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label>Color Variant {index + 1}</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const updated = colorVariants.filter((_, i) => i !== index);
+                              setColorVariants(updated);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`color-name-${index}`}>Color Name</Label>
+                            <Select
+                              value={variant.color}
+                              onValueChange={(value) => {
+                                const updated = [...colorVariants];
+                                updated[index] = { ...updated[index], color: value };
+                                setColorVariants(updated);
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select color" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {predefinedColors.map((color) => (
+                                  <SelectItem key={color} value={color}>
+                                    {color}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label>Image for {variant.color || "this color"}</Label>
+                            {variant.image ? (
+                              <div className="relative h-24 w-24 rounded-md overflow-hidden border mt-1">
+                                <img src={variant.image} alt={variant.color} className="h-full w-full object-cover" />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6"
+                                  onClick={() => {
+                                    const updated = [...colorVariants];
+                                    updated[index] = { ...updated[index], image: "" };
+                                    setColorVariants(updated);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <ImageUpload
+                                value={[]}
+                                onChange={(urls) => {
+                                  if (urls.length > 0) {
+                                    const updated = [...colorVariants];
+                                    updated[index] = { ...updated[index], image: urls[urls.length - 1] };
+                                    setColorVariants(updated);
+                                  }
+                                }}
+                                onRemove={() => { }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </CardContent>
               </Card>
@@ -381,7 +467,7 @@ export function ProductManagement() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 26 }, (_, i) => 25 + i).map((size) => ( // Sizes from 25 to 50
+                    {Array.from({ length: 26 }, (_, i) => 25 + i).map((size) => (
                       <div key={size} className="flex items-center space-x-2">
                         <Checkbox
                           id={`size-${size}`}
@@ -394,55 +480,19 @@ export function ProductManagement() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Available Colors Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Available Colors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {predefinedColors.map((color) => (
-                      <div key={color} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`color-${color}`}
-                          checked={selectedColors.includes(color)}
-                          onCheckedChange={() => handleColorToggle(color)}
-                        />
-                        <Label htmlFor={`color-${color}`}>{color}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Available Colors Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Available Colors</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {predefinedColors.map((color) => (
-                      <div key={color} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`color-${color}`}
-                          checked={selectedColors.includes(color)}
-                          onCheckedChange={() => handleColorToggle(color)}
-                        />
-                        <Label htmlFor={`color-${color}`}>{color}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-
-            
-
             <div className="flex justify-end space-x-4">
-              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-              <Button onClick={handleSaveProduct}>{editingProduct ? 'Update Product' : 'Publish Product'}</Button>
+              <Button variant="outline" onClick={handleCancelEdit} disabled={isLoading}>Cancel</Button>
+              <Button onClick={handleSaveProduct} disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  editingProduct ? 'Update Product' : 'Publish Product'
+                )}
+              </Button>
             </div>
           </TabsContent>
         </Tabs>
