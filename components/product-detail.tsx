@@ -107,6 +107,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
       price: product.price,
       originalPrice: product.originalPrice,
       image: product.images?.[0] || "/placeholder.svg",
+      brand: product.brand,
       color: selectedColor,
       size: selectedSize.toString(),
     });
@@ -137,6 +138,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
       price: product.price,
       originalPrice: product.originalPrice,
       image: product.images?.[0] || "/placeholder.svg",
+      brand: product.brand,
       color: selectedColor,
       size: selectedSize.toString(),
     });

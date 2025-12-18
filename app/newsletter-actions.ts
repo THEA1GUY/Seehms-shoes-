@@ -41,18 +41,18 @@ export async function getOrders() {
         return result.rows.map(row => {
             const details = row.payment_method_details ? JSON.parse(row.payment_method_details as string) : {}
             return {
-                id: row.id,
-                orderNumber: row.order_number,
-                status: row.status,
-                totalAmount: row.total_amount,
-                paymentStatus: row.payment_status,
-                paymentProof: row.payment_proof,
-                transactionId: row.transaction_id,
-                customerEmail: row.customer_email || details.customerEmail,
-                customerName: row.customer_name || details.customerName,
-                customerPhone: details.customerPhone,
+                id: Number(row.id),
+                orderNumber: String(row.order_number),
+                status: String(row.status),
+                totalAmount: Number(row.total_amount),
+                paymentStatus: String(row.payment_status),
+                paymentProof: row.payment_proof ? String(row.payment_proof) : null,
+                transactionId: row.transaction_id ? String(row.transaction_id) : null,
+                customerEmail: (row.customer_email || details.customerEmail) as string | undefined,
+                customerName: (row.customer_name || details.customerName) as string | undefined,
+                customerPhone: details.customerPhone as string | undefined,
                 shippingAddress: details.shippingAddress,
-                createdAt: row.created_at
+                createdAt: String(row.created_at)
             }
         })
     } catch (error) {
