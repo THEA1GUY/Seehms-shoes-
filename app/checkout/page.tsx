@@ -14,6 +14,8 @@ import { PaymentProofUpload } from "@/components/payment-proof-upload"
 export default function CheckoutPage() {
   const router = useRouter()
   const { items: cart, clearCart, cartTotal } = useCart()
+  const [isMounted, setIsMounted] = useState(false)
+
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [bankDetails, setBankDetails] = useState<any>(null)
@@ -34,6 +36,12 @@ export default function CheckoutPage() {
   })
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
     // Check if cart is empty
     if (cart.length === 0 && !isSuccess) {
       router.push("/shop")
@@ -55,7 +63,7 @@ export default function CheckoutPage() {
 
     // Load bank details
     loadBankDetails()
-  }, [cart, router])
+  }, [cart, router, isSuccess, isMounted])
 
   const loadBankDetails = async () => {
     const settings = await getPaymentSettings()
@@ -66,8 +74,8 @@ export default function CheckoutPage() {
     e.preventDefault()
 
     // Enforce Payment Proof
-    if (!paymentProof && !transactionId) {
-      alert("Please upload payment proof or enter a transaction ID to continue.")
+    if (!transactionId) {
+      alert("Please enter a transaction ID to continue.")
       return
     }
 
@@ -99,17 +107,36 @@ export default function CheckoutPage() {
       paymentProof: paymentProof || undefined
     }
 
-    const result = await createOrder(orderData)
+    try {
+      const result = await createOrder(orderData)
 
-    if (result.success) {
-      setIsSuccess(true)
-      clearCart()
-      router.push(`/order/${result.orderId}?new=true`)
-    } else {
-      alert("Failed to create order. Please try again.")
+      if (result.success) {
+        setIsSuccess(true)
+        clearCart()
+        router.push(`/order/${result.orderId}?new=true`)
+      } else {
+        alert("Failed to create order. Please try again.")
+      }
+    } catch (err) {
+      console.error("Checkout error:", err)
+      alert("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    setIsLoading(false)
+  if (!isMounted) return null
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <h2 className="text-2xl font-bold">Order complete!</h2>
+          <p className="text-muted-foreground">Redirecting you to your order details...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -229,10 +256,10 @@ export default function CheckoutPage() {
                         </>
                       )}
                     </Button>
-                    {!paymentProof && !transactionId && (
+                    {!transactionId && (
                       <p className="text-sm text-destructive text-center flex items-center justify-center gap-2">
                         <AlertCircle className="h-4 w-4" />
-                        Payment proof required
+                        Transaction ID required
                       </p>
                     )}
                   </form>
@@ -304,23 +331,30 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
+                  <div className="bg-primary/10 p-4 rounded-lg">
+                    <p className="text-sm font-semibold mb-2">How to Pay:</p>
+                    <ol className="text-xs space-y-1.5 list-none">
+                      <li className="flex gap-2">
+                        <span className="font-bold text-primary">1.</span>
+                        <span>Make bank transfer of <strong>₦{cartTotal?.toLocaleString() || '0'}</strong></span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="font-bold text-primary">2.</span>
+                        <span>Paste your Transaction Reference ID below</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="font-bold text-primary">3.</span>
+                        <span>Click <strong>"Place Order"</strong> to finish</span>
+                      </li>
+                    </ol>
+                  </div>
+
                   <div className="border-t pt-4">
-                    <h4 className="font-semibold text-sm mb-2">Upload Proof (Required)</h4>
                     <PaymentProofUpload
                       onChange={(data) => {
-                        setPaymentProof(data.proofUrl || null)
                         setTransactionId(data.transactionId || null)
                       }}
                     />
-                  </div>
-
-                  <div className="bg-primary/10 p-4 rounded-lg">
-                    <p className="text-sm font-semibold mb-2">Instructions:</p>
-                    <ol className="text-sm space-y-1 list-decimal list-inside">
-                      <li>Make bank transfer of ₦{cartTotal?.toLocaleString() || '0'}</li>
-                      <li>Upload proof or enter Transaction ID above</li>
-                      <li>Click "Place Order" to finish</li>
-                    </ol>
                   </div>
                 </CardContent>
               </Card>

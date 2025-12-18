@@ -53,7 +53,7 @@ export function FeaturedProductsList({ products }: FeaturedProductsListProps) {
                 </motion.p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-8">
                 {products.map((product, index) => (
                     <motion.div
                         key={product.id}
@@ -104,32 +104,32 @@ export function FeaturedProductsList({ products }: FeaturedProductsListProps) {
                                     )}
                                 </div>
 
-                                <CardContent className="p-5 space-y-3">
-                                    <div className="space-y-1">
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-xs font-semibold text-primary uppercase tracking-wider">{product.categories?.name || 'Shoes'}</p>
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-3 w-3 fill-accent text-accent" />
-                                                <span className="text-xs font-medium">{product.rating || 0}</span>
+                                <CardContent className="p-1.5 sm:p-5 space-y-1.5 sm:space-y-3">
+                                    <div className="space-y-0.5 sm:space-y-1">
+                                        <div className="flex justify-between items-center sm:items-start flex-col sm:flex-row">
+                                            <p className="text-[10px] sm:text-xs font-semibold text-primary uppercase tracking-wider line-clamp-1">{product.categories?.name || 'Shoes'}</p>
+                                            <div className="flex items-center gap-0.5 sm:gap-1">
+                                                <Star className="h-2.5 w-2.5 sm:h-3 w-3 fill-accent text-accent" />
+                                                <span className="text-[10px] sm:text-xs font-medium">{product.rating || 0}</span>
                                             </div>
                                         </div>
-                                        <h3 className="font-heading font-bold text-lg group-hover:text-primary transition-colors line-clamp-1">
+                                        <h3 className="font-heading font-bold text-xs sm:text-lg group-hover:text-primary transition-colors line-clamp-1 leading-tight">
                                             {product.name}
                                         </h3>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-2">
+                                    <div className="flex items-center justify-between pt-1 sm:pt-2">
                                         <div className="flex flex-col">
                                             {product.originalPrice && (
-                                                <span className="text-xs text-muted-foreground line-through">₦{product.originalPrice}</span>
+                                                <span className="text-[10px] sm:text-xs text-muted-foreground line-through">₦{product.originalPrice}</span>
                                             )}
-                                            <span className="font-bold text-xl">₦{product.price}</span>
+                                            <span className="font-bold text-sm sm:text-xl">₦{product.price}</span>
                                         </div>
 
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="text-primary hover:text-primary/80 px-0 hover:bg-transparent group/btn"
+                                            className="hidden sm:flex text-primary hover:text-primary/80 px-0 hover:bg-transparent group/btn h-auto py-0"
                                         >
                                             Add to Cart <ArrowRight className="ml-1 h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
