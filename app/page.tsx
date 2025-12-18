@@ -5,13 +5,14 @@ import { FeaturedProducts } from "@/components/featured-products"
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <Navigation />
       <main>
         <HeroSection />
         <CategoryTiles />
+        {/* @ts-expect-error Async Server Component */}
         <FeaturedProducts />
       </main>
     </div>
