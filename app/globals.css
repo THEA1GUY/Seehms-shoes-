@@ -4,76 +4,81 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens to match Shoe Haven brand design */
-  --background: oklch(0.98 0 0); /* Light Gray #F8F8F8 */
-  --foreground: oklch(0.18 0 0); /* Charcoal #2D2D2D */
-  --card: oklch(1 0 0); /* White #FFFFFF */
-  --card-foreground: oklch(0.18 0 0); /* Charcoal for card text */
-  --popover: oklch(0.35 0.08 285); /* Dark Purple #4B3C6E */
-  --popover-foreground: oklch(1 0 0); /* White for popover text */
-  --primary: oklch(0.35 0.08 285); /* Dark Purple #4B3C6E */
-  --primary-foreground: oklch(1 0 0); /* White for primary button text */
-  --secondary: oklch(0.68 0.15 25); /* Coral #FF6F61 */
-  --secondary-foreground: oklch(1 0 0); /* White for secondary button text */
-  --muted: oklch(0.96 0 0); /* Light muted background */
-  --muted-foreground: oklch(0.45 0 0); /* Muted text */
-  --accent: oklch(0.85 0.12 85); /* Gold #FFD700 */
-  --accent-foreground: oklch(0.35 0.08 285); /* Dark Purple for accent text */
+  /* Premium Palette - Light Mode */
+  --background: oklch(0.99 0 0);
+  /* Pure White */
+  --foreground: oklch(0.15 0.02 260);
+  /* Deep Navy-Charcoal */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 260);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 260);
+
+  /* Primary: Sophisticated Indigo-Purple */
+  --primary: oklch(0.35 0.12 280);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary: Soft Gold/Sand for elegance */
+  --secondary: oklch(0.92 0.04 85);
+  --secondary-foreground: oklch(0.35 0.12 280);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+
+  /* Accent: Vibrant Coral for CTAs */
+  --accent: oklch(0.65 0.2 25);
+  --accent-foreground: oklch(1 0 0);
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.88 0 0); /* Light border #E0E0E0 */
-  --input: oklch(1 0 0); /* White for inputs */
-  --ring: oklch(0.85 0.12 85); /* Gold for focus rings */
-  --chart-1: oklch(0.35 0.08 285); /* Dark Purple */
-  --chart-2: oklch(0.68 0.15 25); /* Coral */
-  --chart-3: oklch(0.85 0.12 85); /* Gold */
-  --chart-4: oklch(0.18 0 0); /* Charcoal */
-  --chart-5: oklch(0.96 0 0); /* Light Gray */
-  --radius: 0.5rem;
-  --sidebar: oklch(1 0 0); /* White sidebar */
-  --sidebar-foreground: oklch(0.18 0 0); /* Charcoal sidebar text */
-  --sidebar-primary: oklch(0.35 0.08 285); /* Dark Purple */
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.68 0.15 25); /* Coral accent */
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.88 0 0);
-  --sidebar-ring: oklch(0.85 0.12 85); /* Gold */
+
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.96 0 0);
+  --ring: oklch(0.35 0.12 280);
+
+  --radius: 0.75rem;
+
+  /* Chart Colors */
+  --chart-1: oklch(0.35 0.12 280);
+  --chart-2: oklch(0.65 0.2 25);
+  --chart-3: oklch(0.85 0.12 85);
+  --chart-4: oklch(0.15 0.02 260);
+  --chart-5: oklch(0.97 0 0);
 }
 
 .dark {
-  /* Updated dark mode tokens to maintain brand consistency */
-  --background: oklch(0.12 0 0); /* Dark background */
-  --foreground: oklch(0.98 0 0); /* Light text */
-  --card: oklch(0.15 0 0); /* Dark card */
+  /* Premium Palette - Dark Mode */
+  --background: oklch(0.10 0.02 260);
+  /* Deepest Navy */
+  --foreground: oklch(0.98 0 0);
+
+  --card: oklch(0.13 0.03 260);
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.15 0 0);
+
+  --popover: oklch(0.13 0.03 260);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.45 0.08 285); /* Lighter purple for dark mode */
+
+  --primary: oklch(0.55 0.15 280);
+  /* Brighter Purple for Dark Mode */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.78 0.15 25); /* Lighter coral for dark mode */
-  --secondary-foreground: oklch(0.12 0 0);
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.85 0.12 85); /* Gold remains bright */
-  --accent-foreground: oklch(0.12 0 0);
+
+  --secondary: oklch(0.20 0.05 260);
+  --secondary-foreground: oklch(0.98 0 0);
+
+  --muted: oklch(0.18 0.03 260);
+  --muted-foreground: oklch(0.70 0 0);
+
+  --accent: oklch(0.65 0.2 25);
+  --accent-foreground: oklch(1 0 0);
+
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.18 0 0);
-  --ring: oklch(0.85 0.12 85);
-  --chart-1: oklch(0.45 0.08 285);
-  --chart-2: oklch(0.78 0.15 25);
-  --chart-3: oklch(0.85 0.12 85);
-  --chart-4: oklch(0.65 0 0);
-  --chart-5: oklch(0.25 0 0);
-  --sidebar: oklch(0.15 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.45 0.08 285);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.78 0.15 25);
-  --sidebar-accent-foreground: oklch(0.12 0 0);
-  --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.85 0.12 85);
+
+  --border: oklch(0.20 0.05 260);
+  --input: oklch(0.20 0.05 260);
+  --ring: oklch(0.55 0.15 280);
 }
 
 @theme inline {
@@ -105,15 +110,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  /* Added custom font variables for Work Sans and Open Sans */
+
   --font-heading: "Work Sans", sans-serif;
   --font-body: "Open Sans", sans-serif;
 }
@@ -122,14 +119,33 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-body antialiased selection:bg-primary/20 selection:text-primary;
   }
-  /* Added typography classes for consistent heading and body text */
-  .font-heading {
-    font-family: var(--font-heading);
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold tracking-tight;
   }
-  .font-body {
-    font-family: var(--font-body);
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-background/40 backdrop-blur-2xl border border-white/30 shadow-2xl;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  }
+
+  .glass-card {
+    @apply bg-card/30 backdrop-blur-xl border border-border/40 shadow-lg transition-all duration-500 hover:shadow-2xl hover:bg-card/40 hover:border-white/50;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }

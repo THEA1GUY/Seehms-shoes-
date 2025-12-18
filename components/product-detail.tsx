@@ -8,15 +8,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Heart, Star, ShoppingCart, Truck, Shield, RotateCcw, Share2, Plus, Minus } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
-import { supabase } from "@/lib/supabaseClient"
+
+import { getProduct, type ColorVariant } from "@/app/actions"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface ProductDetailProps {
   productId: number
 }
 
+import { ShoeLoader } from "@/components/shoe-loader"
+// ... imports ...
+
 export function ProductDetail({ productId }: ProductDetailProps) {
+  const router = useRouter()
   const [product, setProduct] = useState<any | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedColor, setSelectedColor] = useState("")
   const [selectedSize, setSelectedSize] = useState<number | null>(null)
   const [quantity, setQuantity] = useState(1)
@@ -27,38 +34,49 @@ export function ProductDetail({ productId }: ProductDetailProps) {
 
   useEffect(() => {
     async function fetchProduct() {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          categories (name)
-        `)
-        .eq('id', productId)
-        .single();
+      console.log("Fetching product with ID:", productId)
+      setIsLoading(true)
+      try {
+        const data = await getProduct(productId);
+        console.log("Product Data received:", data)
 
-      if (error) {
-        console.error('Error fetching product details:', error);
+        if (data) {
+          setProduct(data);
+          // Set initial color logic...
+          const initialColor = data.colorVariants && data.colorVariants.length > 0
+            ? data.colorVariants[0].color
+            : (data.colors?.[0] || "");
+          setSelectedColor(initialColor);
+          setSelectedSize(data.sizes?.[0] || null);
+        } else {
+          setProduct(null);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
         setProduct(null);
-      } else if (data) {
-        setProduct(data);
-        console.log("Fetched product data:", data);
-        console.log("Product images array:", data?.images);
-        console.log("Product image (single property):", data?.image);
-        setSelectedColor(data.colors?.[0] || "");
-        setSelectedSize(data.sizes?.[0] || null);
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchProduct();
-    console.log("ProductDetail useEffect running for productId:", productId);
   }, [productId]);
 
-  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <ShoeLoader text="Finding your perfect pair..." />
+      </div>
+    )
+  }
 
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product Not Found or Loading...</h1>
-        <p className="text-muted-foreground">Please wait or check if the product exists.</p>
+        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+        <p className="text-muted-foreground">We couldn't find the shoe you're looking for.</p>
+        <Link href="/shop" className="mt-4 inline-block text-primary hover:underline">
+          Return to Shop
+        </Link>
       </div>
     )
   }
@@ -69,21 +87,17 @@ export function ProductDetail({ productId }: ProductDetailProps) {
 
   const handleAddToCart = () => {
     if (!selectedColor || !selectedSize) {
-      alert("Please select a color and size");
+      alert("Please select a color and size first");
       return;
     }
 
-    const selectedVariant = product.variants.find(
-      (v: any) => v.color === selectedColor && v.size === selectedSize
-    );
+    // Try to find variant, but fallback to base product if needed for simple products
+    const selectedVariant = product.variants && product.variants.length > 0
+      ? product.variants.find((v: any) => v.color === selectedColor && v.size === selectedSize)
+      : { stock: 999 }; // Default dummy variant if no specific variants 
 
-    if (!selectedVariant) {
-      alert("Selected variant not found.");
-      return;
-    }
-
-    if (selectedVariant.stock < quantity) {
-      alert(`Only ${selectedVariant.stock} items of this variant are in stock.`);
+    if (selectedVariant && selectedVariant.stock < quantity) {
+      alert(`Only ${selectedVariant.stock} items available`);
       return;
     }
 
@@ -94,18 +108,43 @@ export function ProductDetail({ productId }: ProductDetailProps) {
       originalPrice: product.originalPrice,
       image: product.images?.[0] || "/placeholder.svg",
       color: selectedColor,
-      size: selectedSize,
-      quantity: quantity,
-      brand: product.brand,
-      category: product.categories?.name,
-      // Optionally, you can pass the variant's stock or other variant-specific details
-      // variantStock: selectedVariant.stock,
+      size: selectedSize.toString(),
     });
 
-    // Reset selections after adding to cart
     setQuantity(1);
-    alert("Added to cart!");
+    // Open cart is handled by addItem context
   };
+
+  const handleBuyNow = () => {
+    if (!selectedColor || !selectedSize) {
+      alert("Please select a color and size first");
+      return;
+    }
+
+    // Try to find variant, but fallback to base product if needed for simple products
+    const selectedVariant = product.variants && product.variants.length > 0
+      ? product.variants.find((v: any) => v.color === selectedColor && v.size === selectedSize)
+      : { stock: 999 };
+
+    if (selectedVariant && selectedVariant.stock < quantity) {
+      alert(`Only ${selectedVariant.stock} items available`);
+      return;
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images?.[0] || "/placeholder.svg",
+      color: selectedColor,
+      size: selectedSize.toString(),
+    });
+
+    setQuantity(1);
+    // Use router.push for client-side navigation to preserve state
+    router.push("/checkout");
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -127,9 +166,8 @@ export function ProductDetail({ productId }: ProductDetailProps) {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`aspect-square w-20 rounded-md overflow-hidden border-2 transition-colors ${
-                    selectedImage === index ? "border-primary" : "border-transparent"
-                  }`}
+                  className={`aspect-square w-20 rounded-md overflow-hidden border-2 transition-colors ${selectedImage === index ? "border-primary" : "border-transparent"
+                    }`}
                 >
                   <img
                     src={image || "/placeholder.svg"}
@@ -148,13 +186,12 @@ export function ProductDetail({ productId }: ProductDetailProps) {
             <div className="flex items-center gap-2 mb-2">
               {product.badge && (
                 <Badge
-                  className={`${
-                    product.badge === "Sale"
-                      ? "bg-secondary text-secondary-foreground"
-                      : product.badge === "New"
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-primary text-primary-foreground"
-                  }`}
+                  className={`${product.badge === "Sale"
+                    ? "bg-secondary text-secondary-foreground"
+                    : product.badge === "New"
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-primary text-primary-foreground"
+                    }`}
                 >
                   {product.badge}
                 </Badge>
@@ -169,9 +206,8 @@ export function ProductDetail({ productId }: ProductDetailProps) {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(product.rating || 0) ? "text-accent fill-current" : "text-muted-foreground/30"
-                    }`}
+                    className={`h-4 w-4 ${i < Math.floor(product.rating || 0) ? "text-accent fill-current" : "text-muted-foreground/30"
+                      }`}
                   />
                 ))}
               </div>
@@ -198,30 +234,40 @@ export function ProductDetail({ productId }: ProductDetailProps) {
           <div className="space-y-3">
             <h3 className="font-medium">Color: {selectedColor}</h3>
             <div className="flex gap-2">
-              {(product.colors || []).map((color: string) => (
+              {(product.colorVariants && product.colorVariants.length > 0
+                ? product.colorVariants
+                : (product.colors || []).map((c: string) => ({ color: c, image: "" }))
+              ).map((variant: ColorVariant | { color: string; image: string }) => (
                 <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  className={`w-10 h-10 rounded-full border-4 transition-all ${
-                    selectedColor === color ? "border-primary scale-110" : "border-white shadow-md"
-                  } ${
-                    color === "White"
+                  key={variant.color}
+                  onClick={() => {
+                    setSelectedColor(variant.color);
+                    // If this variant has an image, find it in the images array and set it as selected
+                    if (variant.image && product.images) {
+                      const imageIndex = product.images.indexOf(variant.image);
+                      if (imageIndex !== -1) {
+                        setSelectedImage(imageIndex);
+                      }
+                    }
+                  }}
+                  className={`w-10 h-10 rounded-full border-4 transition-all ${selectedColor === variant.color ? "border-primary scale-110" : "border-white shadow-md"
+                    } ${variant.color === "White"
                       ? "bg-white border-gray-300"
-                      : color === "Black"
+                      : variant.color === "Black"
                         ? "bg-black"
-                        : color === "Gray"
+                        : variant.color === "Gray"
                           ? "bg-gray-400"
-                          : color === "Brown"
+                          : variant.color === "Brown"
                             ? "bg-amber-700"
-                            : color === "Navy"
+                            : variant.color === "Navy"
                               ? "bg-blue-900"
-                              : color === "Blue"
+                              : variant.color === "Blue"
                                 ? "bg-blue-500"
-                                : color === "Red"
+                                : variant.color === "Red"
                                   ? "bg-red-500"
                                   : "bg-gray-300"
-                  }`}
-                  title={color}
+                    }`}
+                  title={variant.color}
                 />
               ))}
             </div>
@@ -284,12 +330,12 @@ export function ProductDetail({ productId }: ProductDetailProps) {
                 </Button>
               </div>
             </div>
-            <Button variant="secondary" className="w-full" size="lg" onClick={() => console.log("Buy Now button clicked")}>
+            <Button variant="secondary" className="w-full" size="lg" onClick={handleBuyNow}>
               Buy Now
             </Button>
           </div>
 
-          
+
         </div>
       </div>
 
@@ -356,7 +402,7 @@ export function ProductDetail({ productId }: ProductDetailProps) {
             </div>
           </TabsContent>
 
-          
+
         </Tabs>
       </div>
 

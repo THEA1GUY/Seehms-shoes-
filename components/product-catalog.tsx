@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Heart, Star, Filter, Grid, List, Search } from "lucide-react"
 import Link from "next/link"
-import { supabase } from "@/lib/supabaseClient"
+import { getProducts, getCategories, type Product } from "@/app/actions"
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -26,44 +26,29 @@ interface ProductCatalogProps {
 }
 
 export function ProductCatalog({ category }: ProductCatalogProps) {
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState(category || "all")
   const [sortBy, setSortBy] = useState("featured")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [priceRange, setPriceRange] = useState([0, 20000]) // Adjusted default price range
+  const [priceRange, setPriceRange] = useState([0, 50000000]) // Max 50 million Naira
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<number[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
 
-  async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        categories (name)
-      `);
-    if (error) {
-      console.error('Error fetching products for catalog:', error);
-    } else if (data) {
-      setProducts(data);
-    }
-  }
-
-  async function fetchCategories() {
-    const { data, error } = await supabase.from('categories').select('id, name');
-    if (error) {
-      console.error('Error fetching categories:', error);
-    } else if (data) {
-      setCategories(data);
-    }
-  }
-
+  // Data fetching
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, []);
+    async function loadData() {
+      const [prods, cats] = await Promise.all([
+        getProducts({ category: selectedCategory === 'all' ? undefined : selectedCategory, sort: sortBy, query: searchQuery }),
+        getCategories()
+      ])
+      setProducts(prods)
+      setCategories(cats as any)
+    }
+    loadData()
+  }, [selectedCategory, sortBy, searchQuery])
 
   // Get unique filter options from fetched products
   const uniqueColors = useMemo(() => Array.from(new Set(products.flatMap((p) => p.colors || []))), [products])
@@ -117,7 +102,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
         filtered.sort((a, b) => b.price - a.price)
         break
       case "rating":
-        filtered.sort((a, b) => b.rating - a.rating)
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
         break
       case "newest":
         filtered.sort((a, b) => b.id - a.id)
@@ -145,7 +130,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
   const clearFilters = () => {
     setSearchQuery("")
     setSelectedCategory("all")
-    setPriceRange([0, 300])
+    setPriceRange([0, 50000000])
     setSelectedColors([])
     setSelectedSizes([])
     setSelectedBrands([])
@@ -175,6 +160,7 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">All Products</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.name.toLowerCase()}>
                 {cat.name}
@@ -188,10 +174,10 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
       <div className="space-y-2">
         <h3 className="font-medium">Price Range</h3>
         <div className="px-2">
-          <Slider value={priceRange} onValueChange={setPriceRange} max={300} min={0} step={10} className="w-full" />
+          <Slider value={priceRange} onValueChange={setPriceRange} max={50000000} min={0} step={100000} className="w-full" />
           <div className="flex justify-between text-sm text-muted-foreground mt-1">
-            <span>₦{priceRange[0]}</span>
-            <span>₦{priceRange[1]}</span>
+            <span>₦{priceRange[0].toLocaleString()}</span>
+            <span>₦{priceRange[1].toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -350,39 +336,41 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
               }
             >
               {filteredProducts.map((product) => (
-                <Link key={product.id} href={`/product/${product.id}`} className="group">
+                <div key={product.id} className="group">
                   <Card
-                    className={`cursor-pointer border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                      viewMode === "list" ? "flex flex-row" : ""
-                    }`}
+                    className={`border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${viewMode === "list" ? "flex flex-row" : ""
+                      }`}
                   >
-                    <div className={`relative ${viewMode === "list" ? "w-48 flex-shrink-0" : ""}`}>
+                    <Link href={`/product/${product.id}`} className={`relative block ${viewMode === "list" ? "w-48 flex-shrink-0" : ""}`}>
                       <div
                         className={`overflow-hidden ${viewMode === "list" ? "aspect-square rounded-l-lg" : "aspect-square rounded-t-lg"}`}
                       >
                         <img
-                          src={product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg"}
+                          src={product.colorVariants && product.colorVariants.length > 0 && product.colorVariants[0].image
+                            ? product.colorVariants[0].image
+                            : (product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg")}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                       {product.badge && (
                         <Badge
-                          className={`absolute top-3 left-3 ${
-                            product.badge === "Sale"
-                              ? "bg-secondary text-secondary-foreground"
-                              : product.badge === "New"
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-primary text-primary-foreground"
-                          }`}
+                          className={`absolute top-3 left-3 ${product.badge === "Sale"
+                            ? "bg-secondary text-secondary-foreground"
+                            : product.badge === "New"
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-primary text-primary-foreground"
+                            }`}
                         >
                           {product.badge}
                         </Badge>
                       )}
+                    </Link>
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-3 right-3 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="bg-white/80 hover:bg-white"
                       >
                         <Heart className="h-4 w-4" />
                       </Button>
@@ -393,9 +381,11 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
                           {product.categories ? product.categories.name : 'Uncategorized'}
                         </p>
-                        <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
-                          {product.name}
-                        </h3>
+                        <Link href={`/product/${product.id}`}>
+                          <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
+                            {product.name}
+                          </h3>
+                        </Link>
                       </div>
 
                       <div className="flex items-center space-x-1">
@@ -403,9 +393,8 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-3 w-3 ${
-                                i < Math.floor(product.rating) ? "text-accent fill-current" : "text-muted-foreground/30"
-                              }`}
+                              className={`h-3 w-3 ${i < Math.floor(product.rating || 0) ? "text-accent fill-current" : "text-muted-foreground/30"
+                                }`}
                             />
                           ))}
                         </div>
@@ -413,9 +402,9 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-lg">₦{product.price}</span>
+                        <span className="font-semibold text-lg">₦{product.price.toLocaleString()}</span>
                         {product.originalPrice && (
-                          <span className="text-sm text-muted-foreground line-through">₦{product.originalPrice}</span>
+                          <span className="text-sm text-muted-foreground line-through">₦{product.originalPrice.toLocaleString()}</span>
                         )}
                       </div>
 
@@ -423,31 +412,30 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
                         {(product.colors || []).slice(0, 4).map((color: string, index: number) => (
                           <div
                             key={color}
-                            className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-                              color === "White"
-                                ? "bg-white border-gray-300"
-                                : color === "Black"
-                                  ? "bg-black"
-                                  : color === "Gray"
-                                    ? "bg-gray-400"
-                                    : color === "Brown"
-                                      ? "bg-amber-700"
-                                      : color === "Navy"
-                                        ? "bg-blue-900"
-                                        : color === "Blue"
-                                          ? "bg-blue-500"
-                                          : color === "Red"
-                                            ? "bg-red-500"
-                                            : color === "Green"
-                                              ? "bg-green-500"
-                                              : color === "Yellow"
-                                                ? "bg-yellow-400"
-                                                : color === "Pink"
-                                                  ? "bg-pink-400"
-                                                  : color === "Olive"
-                                                    ? "bg-green-700"
-                                                    : "bg-gray-300"
-                            }`}
+                            className={`w-4 h-4 rounded-full border-2 border-white shadow-sm ${color === "White"
+                              ? "bg-white border-gray-300"
+                              : color === "Black"
+                                ? "bg-black"
+                                : color === "Gray"
+                                  ? "bg-gray-400"
+                                  : color === "Brown"
+                                    ? "bg-amber-700"
+                                    : color === "Navy"
+                                      ? "bg-blue-900"
+                                      : color === "Blue"
+                                        ? "bg-blue-500"
+                                        : color === "Red"
+                                          ? "bg-red-500"
+                                          : color === "Green"
+                                            ? "bg-green-500"
+                                            : color === "Yellow"
+                                              ? "bg-yellow-400"
+                                              : color === "Pink"
+                                                ? "bg-pink-400"
+                                                : color === "Olive"
+                                                  ? "bg-green-700"
+                                                  : "bg-gray-300"
+                              }`}
                             title={color}
                           />
                         ))}
@@ -458,12 +446,14 @@ export function ProductCatalog({ category }: ProductCatalogProps) {
 
                       {viewMode === "list" && (
                         <div className="pt-2">
-                          <Button className="w-full">Add to Cart</Button>
+                          <Button className="w-full" asChild>
+                            <Link href={`/product/${product.id}`}>Select Options</Link>
+                          </Button>
                         </div>
                       )}
                     </CardContent>
                   </Card>
-                </Link>
+                </div>
               ))}
             </div>
           )}

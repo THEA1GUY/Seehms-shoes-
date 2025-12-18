@@ -10,7 +10,7 @@ import Link from "next/link"
 import { useState } from "react"
 
 export function CartPage() {
-  const { items, total, itemCount, updateQuantity, removeItem } = useCart()
+  const { items, cartTotal: total, cartCount: itemCount, updateQuantity, removeItem } = useCart()
   const [discountCode, setDiscountCode] = useState("")
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; amount: number } | null>(null)
 
