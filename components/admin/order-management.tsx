@@ -44,8 +44,8 @@ interface Order {
   paymentProof?: string | null
   transactionId?: string | null
   createdAt: string
-  customerEmail: string
-  customerName: string
+  customerEmail?: string
+  customerName?: string
   customerPhone?: string
   shippingAddress?: {
     addressLine1: string

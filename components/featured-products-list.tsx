@@ -23,8 +23,8 @@ export function FeaturedProductsList({ products }: FeaturedProductsListProps) {
             id: product.id,
             name: product.name,
             price: product.price,
+            brand: product.brand,
             image: product.images?.[0] || "/placeholder.svg",
-            quantity: 1, // Default to 1
             color: product.colors?.[0], // Default first color
             size: product.sizes?.[0], // Default first size
         })
