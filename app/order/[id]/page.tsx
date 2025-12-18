@@ -103,7 +103,12 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
                             </div>
 
                             <OrderSuccessActions
-                                whatsappUrl={`https://api.whatsapp.com/send?phone=2348187908798&text=${encodeURIComponent(`Hello! I just placed order #${order.order_number}. Please verify my payment.`)}`}
+                                whatsappUrl={`https://api.whatsapp.com/send?phone=2349047961388&text=${encodeURIComponent(
+                                    `Hello! I just placed order #${order.order_number}.\n\n` +
+                                    `*Name:* ${order.customer_name || order.payment_method_details?.customerName || 'Customer'}\n` +
+                                    `*Total:* ₦${order.total_amount.toLocaleString()}\n\n` +
+                                    `Please verify my payment.`
+                                )}`}
                             />
                         </CardContent>
                     </Card>
