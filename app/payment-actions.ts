@@ -155,13 +155,24 @@ export async function createOrder(data: {
         })
 
         const orderId = orderResult.lastInsertRowid
+        if (orderId === undefined) {
+            throw new Error("Failed to create order: No order ID returned")
+        }
 
         // Create order items
         for (const item of data.items) {
             await turso.execute({
                 sql: `INSERT INTO order_items (order_id, product_id, product_name, quantity, price, size, color) 
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                args: [orderId, item.productId, item.productName, item.quantity, item.price, item.size || null, item.color || null]
+                args: [
+                    orderId,
+                    item.productId,
+                    item.productName,
+                    item.quantity,
+                    item.price,
+                    item.size || null,
+                    item.color || null
+                ]
             })
         }
 

@@ -12,7 +12,6 @@ export default async function HomePage() {
       <main>
         <HeroSection />
         <CategoryTiles />
-        {/* @ts-expect-error Async Server Component */}
         <FeaturedProducts />
       </main>
     </div>
