@@ -4,9 +4,10 @@ import ProductFormClient from "./product-form-client"
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProductFormPage({ params }: { params: { id: string } }) {
-    const isNew = params.id === 'new'
-    const product = !isNew ? await getProduct(parseInt(params.id)) : null
+export default async function ProductFormPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    const isNew = id === 'new'
+    const product = !isNew ? await getProduct(parseInt(id)) : null
     const categories = await getCategories()
 
     return (

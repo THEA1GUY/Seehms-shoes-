@@ -3,18 +3,19 @@ import { ProductDetail } from "@/components/product-detail"
 import { Suspense } from "react"
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params
   return (
     <div className="min-h-screen">
       <Navigation />
       <main>
         <Suspense fallback={<div>Loading...</div>}>
-          <ProductDetail productId={Number.parseInt(params.id)} />
+          <ProductDetail productId={Number.parseInt(id)} />
         </Suspense>
       </main>
     </div>
