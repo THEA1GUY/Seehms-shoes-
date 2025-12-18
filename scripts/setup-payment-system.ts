@@ -35,7 +35,7 @@ async function updateOrdersAndCreateSettings() {
         await turso.execute({
             sql: `INSERT INTO payment_settings (bank_name, account_name, account_number, bank_code) 
                   VALUES (?, ?, ?, ?)`,
-            args: ['First Bank', 'Seehms Shoes Limited', '1234567890', '011']
+            args: ['OPay', 'Bitrus Favour', '9047961388', '999992']
         })
         console.log('✅ Inserted default bank details')
 
